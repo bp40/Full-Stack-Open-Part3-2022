@@ -1,8 +1,9 @@
-const { response } = require('express');
 const express = require('express');
+const morgan = require('morgan');
 
 const app = express();
 app.use(express.json());
+app.use(morgan('tiny'));
 
 let persons = [
   {
@@ -58,19 +59,24 @@ app.post('/api/persons', (req, res) => {
   const body = req.body;
 
   if (!body.name || !body.number) {
-    return response.status(400).json({
-      error: 'content missing',
+    return res.status(400).json({
+      error: 'name or number is missing',
     });
   }
 
-  const person = {
+  const newPerson = {
     id: newID,
     name: body.name,
     number: body.number,
   };
 
-  persons = persons.concat(person);
-  res.json(person);
+  if (persons.map((person) => person.name).includes(newPerson.name)) {
+    return res.status(400).json({
+      error: 'name must be unique',
+    });
+  }
+  persons = persons.concat(newPerson);
+  return res.json(newPerson);
 });
 
 const PORT = 3001;
