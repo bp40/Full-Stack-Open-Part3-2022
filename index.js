@@ -3,8 +3,6 @@ const morgan = require('morgan');
 const cors = require('cors');
 
 const app = express();
-app.use(express.json());
-app.use(cors());
 
 morgan.token('req', (req, res) => {
   if (req.method === 'POST') {
@@ -13,6 +11,9 @@ morgan.token('req', (req, res) => {
   return '';
 });
 
+app.use(express.json());
+app.use(cors());
+app.use(express.static('build'));
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :req'));
 
 let persons = [
