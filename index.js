@@ -1,9 +1,11 @@
 const express = require('express');
 const morgan = require('morgan');
+const mongoose = require('mongoose');
 const cors = require('cors');
 
 const app = express();
 
+// eslint-disable-next-line no-unused-vars
 morgan.token('req', (req, res) => {
   if (req.method === 'POST') {
     return `{"name":"${req.body.name}","number":"${req.body.number}"}`;
