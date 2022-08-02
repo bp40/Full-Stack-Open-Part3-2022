@@ -14,9 +14,10 @@ morgan.token('req', (req, res) => {
   return '';
 });
 
+app.use(express.static('build'));
 app.use(express.json());
 app.use(cors());
-app.use(express.static('build'));
+
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :req'));
 
 app.get('/info', (req, res) => {
@@ -37,17 +38,29 @@ app.get('/api/persons', (req, res) => {
   // res.json(persons);
 });
 
-app.get('/api/persons/:id', (req, res) => {
-  ContactInfo.find({ contactId: req.params.id }).then((contact) => {
-    res.json(contact);
-  });
+app.get('/api/persons/:id', (req, res, next) => {
+  ContactInfo.find({ contactId: req.params.id })
+    .then((contact) => {
+      if (contact) {
+        res.json(contact);
+      } else {
+        res.status(404).end();
+      }
+    })
+    .catch((error) => next(error));
 });
 
 app.delete('/api/persons/:id', (req, res) => {
   const contactID = Number(req.params.id);
-  ContactInfo.deleteOne({ contactId: contactID });
-
-  res.status(204).end();
+  ContactInfo.deleteOne({ contactId: contactID })
+    .then((countDeleted) => {
+      console.log(`deleted${countDeleted}`);
+      res.status(204).end();
+    })
+    .catch((err) => {
+      console.log(`deleted none ${err}`);
+      res.status(500).end();
+    });
 });
 
 app.post('/api/persons', (req, res) => {
@@ -77,6 +90,31 @@ app.post('/api/persons', (req, res) => {
 
   return res.json(newContact);
 });
+
+app.put('/api/persons/:id', (req, res, next) => {
+  const updatedInfo = { $set: { name: req.body.name, number: req.body.number } };
+
+  console.log(req.body);
+  ContactInfo
+    .updateOne({ contactId: req.params.id }, updatedInfo)
+    .then(() => {
+      res.status(201).end();
+    })
+    .catch((error) => {
+      next(error);
+    });
+});
+
+const unknownEndPoint = (req, res) => {
+  res.status(404).send({ error: 'unkown endpoint' });
+};
+app.use(unknownEndPoint);
+
+// eslint-disable-next-line no-unused-vars
+const errorHandler = (err, req, res, next) => {
+  res.status(500).send('Server Error!');
+};
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
