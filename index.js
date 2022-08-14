@@ -62,7 +62,8 @@ app.delete('/api/persons/:id', (req, res) => {
     });
 });
 
-app.post('/api/persons', (req, res) => {
+// eslint-disable-next-line consistent-return
+app.post('/api/persons', (req, res, next) => {
   const newID = Math.floor(Math.random() * 10001);
   // eslint-disable-next-line prefer-destructuring
   const body = req.body;
@@ -85,9 +86,13 @@ app.post('/api/persons', (req, res) => {
     });
   }
 
-  newContact.save();
-
-  return res.json(newContact);
+  newContact.save()
+    .then((savedContact) => {
+      res.json(savedContact);
+    })
+    .catch((error) => {
+      next(error);
+    });
 });
 
 app.put('/api/persons/:id', (req, res, next) => {
@@ -95,7 +100,7 @@ app.put('/api/persons/:id', (req, res, next) => {
 
   console.log(req.body);
   ContactInfo
-    .updateOne({ contactId: req.params.id }, updatedInfo)
+    .updateOne({ contactId: req.params.id }, updatedInfo, { new: true, runValidators: true, context: 'query' })
     .then(() => {
       res.status(201).end();
     })
@@ -109,9 +114,16 @@ const unknownEndPoint = (req, res) => {
 };
 app.use(unknownEndPoint);
 
-// eslint-disable-next-line no-unused-vars
+// eslint-disable-next-line no-unused-vars, consistent-return
 const errorHandler = (err, req, res, next) => {
-  res.status(500).send('Server Error!');
+  console.error(`${err.name}-->${err.message}`);
+  console.log();
+
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({ error: err.message });
+  }
+
+  next(err);
 };
 app.use(errorHandler);
 
