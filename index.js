@@ -35,7 +35,6 @@ app.get('/api/persons', (req, res) => {
   ContactInfo.find({}).then((contact) => {
     res.json(contact);
   });
-  // res.json(persons);
 });
 
 app.get('/api/persons/:id', (req, res, next) => {
