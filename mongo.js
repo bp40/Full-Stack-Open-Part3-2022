@@ -5,9 +5,11 @@ if (process.argv.length < 3) {
   process.exit(1);
 }
 
-const password = process.argv[2];
+// const password = process.argv[2];
+// const url = `mongodb+srv://fso40:${password}@fso2022.a8f1h.mongodb.net/?retryWrites=true&w=majority`;
 
-const url = `mongodb+srv://fso40:${password}@fso2022.a8f1h.mongodb.net/?retryWrites=true&w=majority`;
+const url = process.env.MONGODB_URI;
+console.log('connecting to mongo server...');
 
 const contactInfoSchema = new mongoose.Schema({
   contactId: Number,
