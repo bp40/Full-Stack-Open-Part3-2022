@@ -1,8 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const ContactInfo = require('./contactInfo');
-require('dotenv').config();
 
 const app = express();
 
